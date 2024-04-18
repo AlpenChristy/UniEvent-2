@@ -7,7 +7,7 @@ const getStyleValue = (key, value) => {
   if (value === undefined) return;
   return { [key]: value === "unset" ? undefined : value };
 };
-const EmailContainer = ({ emailLabel, emailPlaceholderText, propTop }) => {
+const EmailContainer = ({ emailLabel, emailPlaceholderText, propTop, isPassword, onChangeText }) => {
   const yourEmailStyle = useMemo(() => {
     return {
       ...getStyleValue("top", propTop),
@@ -28,6 +28,8 @@ const EmailContainer = ({ emailLabel, emailPlaceholderText, propTop }) => {
         placeholder={emailLabel}
         placeholderTextColor="gray"
         maxLength={50}
+        secureTextEntry={isPassword}
+        onChangeText={onChangeText}
         // Additional props can be added as needed, e.g., onChangeText
       />
     </View>
@@ -40,9 +42,9 @@ const EmailContainer = ({ emailLabel, emailPlaceholderText, propTop }) => {
       borderRadius: 8,
       backgroundColor: "white",
       position: "absolute",
-      top: 396,
-      left: "50%",
-      transform: [{ translateX: -175 }], // Adjust to center container
+      top: 340,
+      left: "2.5%",
+      // transform: [{ translateX: -175 }], // Adjust to center container
       flexDirection: "row", // To ensure icon stays beside the input
       alignItems: "center", // To vertically center items
     },

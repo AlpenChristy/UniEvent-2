@@ -1,77 +1,157 @@
 import React, { useState, useCallback } from "react";
-import { Image, Pressable, Modal, StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
+import { StyleSheet, Text, View, Pressable, Modal } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { supabase } from '../components/supabase'; // Import supabase from your Supabase setup file
 import EmailContainer from "../components/EmailContainer";
+import { supabase } from '../components/supabase';
+// import VuesaxlineareyeSlash from "../components/VuesaxlineareyeSlash";
+import { Color, FontFamily, FontSize, Border } from "../GlobalStyles";
 
 const SignUpPage = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [vuesaxlineareyeIconVisible, setVuesaxlineareyeIconVisible] = useState(false);
-
-  const openVuesaxlineareyeIcon = useCallback(() => {
-    setVuesaxlineareyeIconVisible(true);
-  }, []);
-
-  const closeVuesaxlineareyeIcon = useCallback(() => {
-    setVuesaxlineareyeIconVisible(false);
-  }, []);
+  // const [vuesaxlineareyeIconVisible, setVuesaxlineareyeIconVisible] =
+  //   useState(false);
+  const handleEmailChange = (text) => {
+    setEmail(text); // Update the email state with the new input value
+  };
+  const handlePasswordChange = (text) => {
+    setPassword(text); // Update the email state with the new input value
+  };
 
   const signUpWithEmail = async () => {
     setLoading(true);
-    const { user, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
 
-    if (error) {
+    try {
+      const { user, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+  
+      if (error) {
+        throw new Error(error.message);
+      }
+  
+      console.log('User signed up successfully:', user);
+      navigation.navigate("DrawerRoot", { screen: "SignInPage" });
+    } catch (error) {
       console.error('Error signing up:', error.message);
       // Handle error (e.g., display error message)
-    } else {
-      console.log('User signed up successfully:', user);
-      // Optionally, navigate to the next screen or show a success message
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
+
+  // const openVuesaxlineareyeIcon = useCallback(() => {
+  //   setVuesaxlineareyeIconVisible(true);
+  // }, []);
+
+  // const closeVuesaxlineareyeIcon = useCallback(() => {
+  //   setVuesaxlineareyeIconVisible(false);
+  // }, []);
 
   return (
     <>
       <View style={styles.signUpPage}>
-        {/* Your existing UI components */}
+        <Image
+          style={styles.circleBottemIcon}
+          contentFit="cover"
+          source={require("../assets/circle-bottem.png")}
+        />
+        <Image
+          style={styles.circleTopIcon}
+          contentFit="cover"
+          source={require("../assets/circle-top.png")}
+        />
+        <Text style={styles.createAccount}>Create Account</Text>
+        <Text style={[styles.signUp, styles.signClr]}>Sign Up</Text>
+        <View style={styles.signInBottem} />
+        <Pressable
+          style={styles.signIn}
+          onPress={() =>
+            navigation.navigate("DrawerRoot", { screen: "SignInPage" })
+          }
+        >
+          <Text style={[styles.signIn1, styles.orTypo]}>Sign In</Text>
+        </Pressable>
         <EmailContainer
           emailLabel="Your Email"
-          onChangeText={setEmail}
           value={email}
           emailPlaceholderText={require("../assets/iconlylightmessage.png")}
+          onChangeText={handleEmailChange}
         />
         <EmailContainer
           emailLabel="Password"
-          onChangeText={setPassword}
           value={password}
           emailPlaceholderText={require("../assets/iconlylightlock.png")}
-          propTop={476}
           secureTextEntry={true}
+          isPassword={true}
+          onChangeText={handlePasswordChange}
+          propTop={440}
         />
         <Pressable
           style={styles.arrow}
           onPress={signUpWithEmail}
-          disabled={loading}
         >
-          {/* Your arrow icon */}
+          <Image
+            style={styles.iconLayout1}
+            contentFit="cover"
+            source={require("../assets/arrow.png")}
+          />
         </Pressable>
-        {/* Your existing UI components */}
+        <Pressable style={styles.vectorTop} onPress={() => navigation.goBack()}>
+          <Image
+            style={[styles.icon1, styles.iconLayout]}
+            contentFit="cover"
+            source={require("../assets/vector-top.png")}
+          />
+        </Pressable>
+        {/* <View style={styles.logWithOtherApps}>
+          
+          <Image
+            style={[styles.googleIcon, styles.iconLayout]}
+            contentFit="cover"
+            source={require("../assets/google.png")}
+          />
+          <Image
+            style={[styles.facebookIcon, styles.iconLayout]}
+            contentFit="cover"
+            source={require("../assets/facebook.png")}
+          />
+          <Image
+            style={[styles.facebookIcon, styles.iconLayout]}
+            contentFit="cover"
+            source={require("../assets/twitter.png")}
+          />
+        </View> */}
+        {/* <Text style={[styles.or, styles.orTypo]}>OR</Text> */}
+        {/* <Pressable
+          style={styles.vuesaxlineareye}
+          onPress={openVuesaxlineareyeIcon}
+        >
+          <Image
+            style={styles.iconLayout1}
+            contentFit="cover"
+            source={require("../assets/vuesaxlineareye.png")}
+          />
+        </Pressable> */}
       </View>
-      {/* Your existing modal for password visibility */}
-      <Modal
+
+      {/* <Modal
         animationType="fade"
         transparent
         visible={vuesaxlineareyeIconVisible}
       >
-        {/* Your existing modal content */}
-      </Modal>
+        <View style={styles.vuesaxlineareyeIconOverlay}>
+          <Pressable
+            style={styles.vuesaxlineareyeIconBg}
+            onPress={closeVuesaxlineareyeIcon}
+          />
+          <VuesaxlineareyeSlash onClose={closeVuesaxlineareyeIcon} />
+        </View>
+      </Modal> */}
     </>
   );
 };

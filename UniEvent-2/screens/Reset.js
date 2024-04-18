@@ -1,12 +1,27 @@
 import * as React from "react";
-import { Image } from "expo-image";
-import { StyleSheet, Text, Pressable, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import EmailContainer from "../components/EmailContainer";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Color, Border } from "../GlobalStyles";
+import { supabase } from '../components/supabase'; // Import supabase
 
 const Reset = () => {
   const navigation = useNavigation();
+  const [email, setEmail] = React.useState('');
+
+  const handleEmailChange = (text) => {
+    setEmail(text); // Update the email state with the new input value
+  };
+
+  const handleResetPassword = async () => {
+    try {
+      await supabase.auth.resetPasswordForEmail(email);
+      // Provide feedback to the user (e.g., display success message)
+    } catch (error) {
+      console.error('Error resetting password:', error.message);
+      // Handle password reset error (e.g., display error message)
+    }
+  };
 
   return (
     <View style={styles.reset}>
@@ -20,20 +35,16 @@ const Reset = () => {
         contentFit="cover"
         source={require("../assets/circle-top.png")}
       />
-      <Text style={[styles.createAccount, styles.reset1Position]}>{`Reset
-Password`}</Text>
-      <Text style={[styles.reset1, styles.reset1Position]}>{`Reset  `}</Text>
+      <Text style={[styles.createAccount, styles.reset1Position]}>Reset Password</Text>
+      <Text style={[styles.reset1, styles.reset1Position]}>Reset  </Text>
       <EmailContainer
         emailLabel="Your Email"
+        value={email}
+        onChangeText={handleEmailChange}
         emailPlaceholderText={require("../assets/iconlylightmessage.png")}
         propTop={439}
       />
-      <Pressable
-        style={styles.arrow}
-        onPress={() =>
-          navigation.navigate("DrawerRoot", { screen: "SignInPage" })
-        }
-      >
+      <Pressable style={styles.arrow} onPress={handleResetPassword}>
         <Image
           style={styles.iconLayout}
           contentFit="cover"

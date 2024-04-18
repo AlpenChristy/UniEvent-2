@@ -10,14 +10,26 @@ import {
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Color } from "../GlobalStyles";
+import { supabase } from '../components/supabase'; 
 
 const FrameComponent4 = ({ style }) => {
   const navigation = useNavigation();
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut(); // Sign out the user
+      // Navigate to the sign-in page after successful sign-out
+      navigation.navigate("SignInPage");
+    } catch (error) {
+      console.error('Error signing out:', error.message);
+      // Handle sign-out error (e.g., display error message)
+    }
+  };
+
   return (
     <Pressable
       style={[styles.logInOutlineParent, style]}
-      onPress={() => navigation.navigate("SignInPage")}
+      onPress={handleSignOut} // Call handleSignOut function on press
     >
       <Image
         style={styles.logInOutlineIcon}

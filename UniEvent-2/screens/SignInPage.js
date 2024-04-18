@@ -1,4 +1,5 @@
-import * as React from "react";
+
+import React, { useState, useCallback } from "react";
 import { Image } from "expo-image";
 import {
   StyleSheet,
@@ -8,11 +9,39 @@ import {
   ImageBackground,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import EmailFormContainer from "../components/EmailFormContainer";
-import { Color, FontFamily, FontSize, Border, Padding } from "../GlobalStyles";
+import EmailContainer from "../components/EmailContainer";
+import { Color, FontFamily, FontSize, Border, Padding, Margin } from "../GlobalStyles";
+import { supabase } from '../components/supabase';
 
 const SignInPage = () => {
   const navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const handleEmailChange = (text) => {
+    setEmail(text); // Update the email state with the new input value
+  };
+  const handlePasswordChange = (text) => {
+    setPassword(text); // Update the email state with the new input value
+  };
+  const handleSignIn = async () => {
+    try {
+      const { user, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Navigate to the home screen after successful sign-in
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error('Error signing in:', error.message);
+      // Handle sign-in error (e.g., display error message)
+    }
+  };
 
   return (
     <ImageBackground
@@ -32,12 +61,29 @@ const SignInPage = () => {
           <Text style={styles.welcome}>Welcome Back</Text>
         </Text>
       </View>
-      <EmailFormContainer />
+      <View style={styles.EmailContainer}>
+      <EmailContainer
+          emailLabel="Your Email"
+          value={email}
+          emailPlaceholderText={require("../assets/iconlylightmessage.png")}
+          onChangeText={handleEmailChange}
+          propTop={110}
+        />
+        <EmailContainer
+          emailLabel="Password"
+          value={password}
+          emailPlaceholderText={require("../assets/iconlylightlock.png")}
+          secureTextEntry={true}
+          isPassword={true}
+          onChangeText={handlePasswordChange}
+          propTop={210}
+        />
+        </View>
       <View style={[styles.signInParent, styles.parentFlexBox]}>
         <Text style={[styles.signIn, styles.signClr]}>Sign in</Text>
         <Pressable
           style={styles.arrow}
-          onPress={() => navigation.navigate("Home")}
+          onPress={handleSignIn}
         >
           <Image
             style={styles.icon}
@@ -103,6 +149,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     flex: 1,
   },
+  EmailContainer: {
+    zIndex: 2,
+    right: 35,
+  },
   parentFlexBox2: {
     flex: 1,
     alignItems: "center",
@@ -120,11 +170,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   welcomeBack: {
+    marginTop:100,
     fontSize: FontSize.size_27xl,
     fontWeight: "700",
     fontFamily: FontFamily.montserratBold,
     color: Color.colorMediumpurple_100,
-    marginTop: 69,
+    
     textAlign: "left",
     alignSelf: "stretch",
   },
@@ -132,11 +183,14 @@ const styles = StyleSheet.create({
     width: 229,
   },
   signIn: {
+    marginTop:250,
     fontSize: FontSize.size_13xl,
     fontWeight: "500",
     fontFamily: FontFamily.montserratMedium,
   },
+
   arrow: {
+    marginTop:250,
     width: 50,
     height: 50,
   },
@@ -152,14 +206,14 @@ const styles = StyleSheet.create({
     lineHeight: 34,
     color: Color.colorDarkgray_200,
     textAlign: "center",
-    marginTop: 35,
+    
   },
   facebookIcon: {
     marginLeft: 21,
   },
   logWithOtherApps: {
     width: 192,
-    marginTop: 35,
+    marginLeft: 60,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -172,6 +226,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorDodgerblue,
     width: 78,
     height: 9,
+    marginBottom:10,
   },
   signUpParent: {
     alignItems: "center",
@@ -181,6 +236,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorRed,
     width: 159,
     height: 9,
+    marginBottom:10,
   },
   forgotPasswordParent: {
     marginLeft: 66,
