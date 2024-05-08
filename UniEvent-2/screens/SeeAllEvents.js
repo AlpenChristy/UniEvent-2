@@ -1,13 +1,79 @@
-import React, { useState, useCallback } from "react";
-import { Image } from "expo-image";
-import { StyleSheet, Pressable, Text, View, Modal } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+// import { Image } from "expo-image";
+import { Image, FlatList, TextInput, StyleSheet, Pressable, Text, View, Modal } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Menu from "../components/Menu";
 import { FontFamily, FontSize, Color, Padding, Border } from "../GlobalStyles";
+import { supabase } from '../components/supabase';
 
 const SeeAllEvents = () => {
   const navigation = useNavigation();
   const [moreIconVisible, setMoreIconVisible] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const renderSeparator = () => <View style={styles.separator} />;
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase.from("events").select("*");
+      if (error) {
+        throw error;
+      }
+      console.log("Fetched events:", data);
+      setEvents(data || []);
+    } catch (error) {
+      console.error("Error fetching events:", error.message);
+    }
+  };
+  
+  const keyExtractor = (item, index) => {
+    return item.id ? item.id.toString() : index.toString();
+  };
+  
+  const filteredEvents = events.filter(event =>
+    event.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  console.log('Filtered Events:', filteredEvents);
+  
+  const renderItem = ({ item }) => (
+    <View style={styles.groupParent}>
+      <Image
+        style={styles.frameChild}
+        contentFit="cover"
+        source={require("../assets/group-33349.png")}
+      />
+      <View style={styles.frameGroup}>
+        <View style={[styles.frame2, styles.frameLayout1]}>
+          <View style={[styles.frame3, styles.frameFlexBox]}>
+            <Text style={[styles.wedApr28, styles.minTypo1]}>
+              {item.date} • {item.time}
+            </Text>
+            <View style={[styles.iconbookmark, styles.iconbookmarkLayout]} />
+          </View>
+          <Text style={[styles.imGoingTo, styles.goingTypo1]}>
+            {item.title}
+          </Text>
+        </View>
+        <View style={styles.mapPinParent}>
+          <Image
+            style={styles.mapPinIcon}
+            contentFit="cover"
+            source={require("../assets/mappin.png")}
+          />
+          <Text style={[styles.min, styles.minTypo1]}>{item.location}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+
+  const navigateToEvent = (event) => {
+    // Navigate to event details screen
+  };
 
   const openMoreIcon = useCallback(() => {
     setMoreIconVisible(true);
@@ -34,14 +100,20 @@ const SeeAllEvents = () => {
           <View style={[styles.frame, styles.frameFlexBox]}>
             <Text style={styles.helloAshfak}>Events</Text>
             <View style={[styles.frame1, styles.frame1Layout]}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search events"
+                value={searchQuery}
+                onChangeText={(text) => setSearchQuery(text)}
+              />
               <Image
-                style={[styles.searchIcon, styles.frame1Layout]}
+                style={[styles.searchIcon]}
                 contentFit="cover"
                 source={require("../assets/search1.png")}
               />
               <Pressable
                 style={[styles.more, styles.backLayout]}
-                onPress={openMoreIcon}
+                onPress={() => setMoreIconVisible(!moreIconVisible)}
               >
                 <Image
                   style={styles.icon}
@@ -52,206 +124,19 @@ const SeeAllEvents = () => {
             </View>
           </View>
         </View>
-        <View style={styles.frameParent}>
-          <View style={styles.groupParent}>
-            <Image
-              style={styles.frameChild}
-              contentFit="cover"
-              source={require("../assets/group-33349.png")}
-            />
-            <View style={styles.frameGroup}>
-              <View style={[styles.frame2, styles.frameLayout1]}>
-                <View style={[styles.frame3, styles.frameFlexBox]}>
-                  <Text style={[styles.wedApr28, styles.minTypo1]}>
-                    Wed, Apr 28 • 5:30 PM
-                  </Text>
-                  <View
-                    style={[styles.iconbookmark, styles.iconbookmarkLayout]}
-                  />
-                </View>
-                <Text style={[styles.imGoingTo, styles.goingTypo1]}>
-                  Navrachana Music Fest
-                </Text>
-              </View>
-              <View style={styles.mapPinParent}>
-                <Image
-                  style={styles.mapPinIcon}
-                  contentFit="cover"
-                  source={require("../assets/mappin.png")}
-                />
-                <Text style={[styles.min, styles.minTypo1]}>
-                  Radius Gallery • Santa Cruz, CA
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View style={[styles.groupContainer, styles.groupParentShadowBox]}>
-            <Image
-              style={styles.frameChild}
-              contentFit="cover"
-              source={require("../assets/group-333491.png")}
-            />
-            <View style={[styles.frameContainer, styles.frameLayout]}>
-              <View style={styles.frameLayout1}>
-                <View style={[styles.frame3, styles.frameFlexBox]}>
-                  <Text style={[styles.wedApr28, styles.minTypo1]}>
-                    Sat, May 1 • 2:00 PM
-                  </Text>
-                  <View
-                    style={[styles.iconbookmark1, styles.iconbookmarkLayout]}
-                  />
-                </View>
-                <Text style={[styles.imGoingTo1, styles.goingTypo1]}>
-                  A Virtual Evening of Smooth Jazz
-                </Text>
-              </View>
-              <View style={[styles.mapPinGroup, styles.mapParentFlexBox]}>
-                <Image
-                  style={styles.mapPinIcon}
-                  contentFit="cover"
-                  source={require("../assets/mappin.png")}
-                />
-                <Text style={[styles.min1, styles.minTypo]}>
-                  Lot 13 • Oakland, CA
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View style={[styles.frameView, styles.groupParentShadowBox]}>
-            <Image
-              style={styles.frameChild}
-              contentFit="cover"
-              source={require("../assets/group-333492.png")}
-            />
-            <View style={[styles.frameParent1, styles.frameLayout]}>
-              <View style={[styles.frame2, styles.frameLayout1]}>
-                <View style={[styles.frame3, styles.frameFlexBox]}>
-                  <Text style={[styles.wedApr28, styles.minTypo1]}>
-                    Sat, Apr 24 • 1:30 PM
-                  </Text>
-                  <View
-                    style={[styles.iconbookmark2, styles.iconbookmarkLayout]}
-                  />
-                </View>
-                <Text style={[styles.imGoingTo2, styles.goingTypo]}>
-                  Women's Leadership Conference 2021
-                </Text>
-              </View>
-              <View style={[styles.mapPinContainer, styles.mapParentFlexBox]}>
-                <Image
-                  style={styles.mapPinIcon}
-                  contentFit="cover"
-                  source={require("../assets/mappin.png")}
-                />
-                <Text style={[styles.min2, styles.minTypo1]}>
-                  53 Bush St • San Francisco, CA
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View style={[styles.groupParent1, styles.groupParentShadowBox]}>
-            <Image
-              style={styles.frameChild}
-              contentFit="cover"
-              source={require("../assets/group-333493.png")}
-            />
-            <View style={[styles.frameContainer, styles.frameLayout]}>
-              <View style={[styles.frame2, styles.frameLayout1]}>
-                <View style={[styles.frame3, styles.frameFlexBox]}>
-                  <Text style={[styles.wedApr28, styles.minTypo1]}>
-                    Fri, Apr 23 • 6:00 PM
-                  </Text>
-                  <View
-                    style={[styles.iconbookmark3, styles.iconbookmarkLayout]}
-                  />
-                </View>
-                <Text style={[styles.imGoingTo2, styles.goingTypo]}>
-                  International Kids Safe Parents Night Out
-                </Text>
-              </View>
-              <View style={[styles.mapPinGroup, styles.mapParentFlexBox]}>
-                <Image
-                  style={styles.mapPinIcon}
-                  contentFit="cover"
-                  source={require("../assets/mappin.png")}
-                />
-                <Text style={[styles.min1, styles.minTypo]}>
-                  Lot 13 • Oakland, CA
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View style={[styles.groupParent2, styles.groupParentShadowBox]}>
-            <Image
-              style={styles.frameChild}
-              contentFit="cover"
-              source={require("../assets/group-333494.png")}
-            />
-            <View style={[styles.frameContainer, styles.frameLayout]}>
-              <View style={[styles.frame2, styles.frameLayout1]}>
-                <View style={[styles.frame3, styles.frameFlexBox]}>
-                  <Text style={[styles.wedApr28, styles.minTypo1]}>
-                    Mon, Jun 21 • 10:00 PM
-                  </Text>
-                  <View
-                    style={[styles.iconbookmark4, styles.iconbookmarkLayout]}
-                  />
-                </View>
-                <Text
-                  style={[styles.imGoingTo4, styles.goingTypo1]}
-                >{`Collectivity Plays the Music of Jimi `}</Text>
-              </View>
-              <View style={[styles.mapPinParent2, styles.mapParentFlexBox]}>
-                <Image
-                  style={styles.mapPinIcon}
-                  contentFit="cover"
-                  source={require("../assets/mappin.png")}
-                />
-                <Text
-                  style={[styles.min1, styles.minTypo]}
-                >{`Longboard Margarita Bar `}</Text>
-              </View>
-            </View>
-          </View>
-          <View style={[styles.groupParent3, styles.groupParentShadowBox]}>
-            <Image
-              style={styles.frameChild}
-              contentFit="cover"
-              source={require("../assets/group-333495.png")}
-            />
-            <View style={styles.frameParent4}>
-              <View style={[styles.frame2, styles.frameLayout1]}>
-                <View style={[styles.frame3, styles.frameFlexBox]}>
-                  <Text style={[styles.wedApr28, styles.minTypo1]}>
-                    Sun, Apr 25 • 10:15 AM
-                  </Text>
-                  <View
-                    style={[styles.iconbookmark5, styles.iconbookmarkLayout]}
-                  />
-                </View>
-                <Text style={[styles.imGoingTo5, styles.goingTypo]}>
-                  International Gala Music Festival
-                </Text>
-              </View>
-              <View style={[styles.mapPinParent3, styles.mapParentFlexBox]}>
-                <Image
-                  style={[styles.mapPinIcon5, styles.iconbookmarkLayout]}
-                  contentFit="cover"
-                  source={require("../assets/mappin1.png")}
-                />
-                <Text
-                  style={[styles.min5, styles.minTypo]}
-                >{`36 Guild Street London, UK  `}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
+
+        <FlatList
+          data={searchQuery === "" ? events : filteredEvents}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.eventid.toString()}
+          ItemSeparatorComponent={renderSeparator}
+        />
       </View>
 
       <Modal animationType="fade" transparent visible={moreIconVisible}>
         <View style={styles.moreIconOverlay}>
           <Pressable style={styles.moreIconBg} onPress={closeMoreIcon} />
-          <Menu onClose={closeMoreIcon} />
+          <Menu onClose={() => setMoreIconVisible(false)} />
         </View>
       </Modal>
     </>
@@ -259,12 +144,16 @@ const SeeAllEvents = () => {
 };
 
 const styles = StyleSheet.create({
+  separator: {
+    height: 12, // Adjust as needed for the desired spacing
+  },
   frameFlexBox: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 5,
   },
   frame1Layout: {
-    height: 24,
+    flex: 1, 
     overflow: "hidden",
   },
   backLayout: {
@@ -345,10 +234,12 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.montserratSemiBold,
     fontWeight: "600",
     color: Color.colorTypographyTitle,
+    marginLeft: 10,
   },
   searchIcon: {
     width: 24,
-  },
+    height: 24, // Adjust the height as needed
+  },  
   moreIconOverlay: {
     flex: 1,
     alignItems: "center",
@@ -363,20 +254,30 @@ const styles = StyleSheet.create({
     top: 0,
   },
   more: {
-    marginLeft: 16,
+    marginRight: 20,
   },
   frame1: {
-    width: 62,
-    marginLeft: 148,
+    width: "100%",
+    marginLeft: 10,
     alignItems: "center",
     flexDirection: "row",
   },
   frame: {
-    width: 294,
+    flexDirection: "row",
+    width: "100%",
     height: 29,
     alignItems: "center",
     overflow: "hidden",
   },
+  searchInput: {
+    flex: 1,
+    marginLeft: 50,
+    fontSize: FontSize.size_smi,
+    fontFamily: FontFamily.montserratMedium,
+    color: Color.colorTypographyTitle,
+    alignSelf: 'center',
+  },  
+
   backParent: {
     justifyContent: "space-between",
     alignItems: "center",
@@ -546,7 +447,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorLavender_100,
     flex: 1,
     height: 812,
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     paddingHorizontal: Padding.p_5xl,
     paddingTop: Padding.p_10xl,
     paddingBottom: Padding.p_6xs,

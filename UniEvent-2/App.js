@@ -102,7 +102,7 @@ const App = () => {
       <NavigationContainer>
         {hideSplashScreen ? (
           <Stack.Navigator
-            initialRouteName="Welcome"
+            initialRouteName="Home"
             screenOptions={{ headerShown: false }}
           >
             <Stack.Screen name="DrawerRoot" component={DrawerRoot} />

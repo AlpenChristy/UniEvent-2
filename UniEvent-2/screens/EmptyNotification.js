@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    alignSelf: "start",
+    alignSelf: "flex-start",
     fontSize: FontSize.size_lg,
     lineHeight: 34,
     fontWeight: "600",

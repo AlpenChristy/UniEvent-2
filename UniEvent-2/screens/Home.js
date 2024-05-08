@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Text, StyleSheet, View, Pressable, Modal } from "react-native";
 import { Image } from "expo-image";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import Menu from "../components/Menu";
 import Filter from "../components/Filter";
 import { FontSize, FontFamily, Color, Border, Padding } from "../GlobalStyles";
@@ -11,6 +11,13 @@ const Home = () => {
   const [combinedShape2Visible, setCombinedShape2Visible] = useState(false);
   const [frameContainer45Visible, setFrameContainer45Visible] = useState(false);
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    // Reset menu state when component gains focus
+    setCombinedShape2Visible(false);
+    setFrameContainer45Visible(false);
+  }, [isFocused]);
 
   const openCombinedShape2 = useCallback(() => {
     setCombinedShape2Visible(true);
@@ -31,6 +38,7 @@ const Home = () => {
   return (
     <>
       <View style={styles.home}>
+        <ScrollView contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', flex:2 }} showsVerticalScrollIndicator={true}>
         <View style={styles.frameParent}>
           <View style={styles.popularParent}>
             <Text style={styles.popular}>Upcoming Events</Text>
@@ -49,6 +57,7 @@ const Home = () => {
             </Pressable>
           </View>
           <View style={styles.frameGroup}>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             <View style={styles.frameContainer}>
               <Pressable
                 style={styles.frame}
@@ -164,6 +173,7 @@ const Home = () => {
                 />
               </View>
             </View>
+            </ScrollView>
           </View>
           <View style={styles.popularGroup}>
             <Text style={styles.popular}>Nearby You</Text>
@@ -264,6 +274,7 @@ const Home = () => {
             </View>
           </View>
         </View>
+        </ScrollView>
         <View style={styles.frame16}>
           <View style={styles.rectangleView} />
           <View style={styles.combinedShape2Parent}>
@@ -290,7 +301,7 @@ const Home = () => {
             </View>
             <Pressable
               style={styles.wrapper}
-              onPress={() => navigation.navigate("Notification1")}
+              onPress={() => navigation.navigate("EmptyNotification")}
             >
               <Image
                 style={styles.icon2}
@@ -443,7 +454,7 @@ const Home = () => {
         </View>
       </Modal>
 
-      <Modal animationType="slide" transparent visible={frameContainer45Visible}>
+      {/* <Modal animationType="slide" transparent visible={frameContainer45Visible}>
         <View style={styles.frameContainer45Overlay}>
           <Pressable
             style={styles.frameContainer45Bg}
@@ -451,12 +462,19 @@ const Home = () => {
           />
           <Filter onClose={closeFrameContainer45} />
         </View>
-      </Modal>
+      </Modal> */}
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
   popular: {
     position: "relative",
     fontSize: FontSize.size_lg,
@@ -1049,12 +1067,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 218,
     left: 24,
-    height: 503,
+    height: "auto", // Remove the fixed height
     flexDirection: "column",
     alignItems: "flex-start",
     justifyContent: "flex-start",
-    flexGrow: 1,
-    
+    flexGrow: 1, // Add this line
   },
   rectangleView: {
     position: "relative",
@@ -1521,7 +1538,6 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorLavender_100,
     flex: 1,
     width: "100%",
-    height: 812,
     overflow: "hidden",
   },
 });
