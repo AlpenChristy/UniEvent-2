@@ -23,7 +23,6 @@ const SeeAllEvents = () => {
       if (error) {
         throw error;
       }
-      console.log("Fetched events:", data);
       setEvents(data || []);
     } catch (error) {
       console.error("Error fetching events:", error.message);
@@ -37,7 +36,6 @@ const SeeAllEvents = () => {
   const filteredEvents = events.filter(event =>
     event.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log('Filtered Events:', filteredEvents);
   
   const renderItem = ({ item }) => (
     <View style={styles.groupParent}>
@@ -150,7 +148,7 @@ const styles = StyleSheet.create({
   frameFlexBox: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 5,
+    marginBottom: 10,
   },
   frame1Layout: {
     flex: 1, 

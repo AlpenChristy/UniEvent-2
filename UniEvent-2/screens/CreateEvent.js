@@ -1,13 +1,44 @@
-import React, { useState, useCallback } from "react";
-import { StyleSheet, View, Pressable, Text, Modal } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { StyleSheet, View, Pressable, Text, Modal, TextInput, TouchableOpacity, ScrollView, Button, Platform  } from "react-native";
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
 import Menu from "../components/Menu";
 import { FontSize, Color, FontFamily, Border } from "../GlobalStyles";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+// Initialize Supabase client
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const CreateEvent = () => {
+  const [eventName, setEventName] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventPass, setEventPass] = useState('');
+  const [eventQuantity, setEventQuantity] = useState('');
+  const [eventDescription, setEventDescription] = useState('');
   const navigation = useNavigation();
   const [moreIconVisible, setMoreIconVisible] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [time, setTime] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(Platform.OS === 'ios'); // Only show date picker on android
+    setDate(currentDate);
+    // You can handle storing the date in the database here
+  };
+
+  const handleTimeChange = (event, selectedTime) => {
+    const currentTime = selectedTime || time;
+    setShowTimePicker(Platform.OS === 'ios'); // Only show time picker on android
+    setTime(currentTime);
+    // You can handle storing the time in the database here
+  };
 
   const openMoreIcon = useCallback(() => {
     setMoreIconVisible(true);
@@ -16,6 +47,59 @@ const CreateEvent = () => {
   const closeMoreIcon = useCallback(() => {
     setMoreIconVisible(false);
   }, []);
+
+  const showDatePickerModal = () => {
+    setShowDatePicker(true);
+  };
+
+  const showTimePickerModal = () => {
+    setShowTimePicker(true);
+  };
+
+  const handleApply = async () => {
+ 
+    const { data: lastEvent, error: lastEventError } = await supabase
+    .from('events')
+    .select('eventid')
+    .order('eventid', { ascending: false })
+    .limit(1);
+
+    if (lastEventError) {
+      console.error('Error fetching last event id:', lastEventError.message);
+      return;
+    }
+
+    // Calculate the new id by incrementing the last id by 1
+    const newId = lastEvent.length > 0 ? lastEvent[0].eventid + 1 : 1;
+
+    const formattedTime = time.toLocaleTimeString('en-US', { hour12: false });
+
+    try {
+      const { data, error } = await supabase
+        .from('events') // Replace 'events' with your table name
+        .insert([
+          {
+            eventid: newId,
+            title: eventName,
+            description: eventDescription, // Get the description value from the TextInput
+            ticketprice: eventPass, // Get the pass price value from the TextInput
+            ticketsavailable: eventQuantity, // Get the pass quantity value from the TextInput
+            location: eventLocation, // Get the location value from the TextInput
+            date: date.toISOString(), // Convert the date object to a string in ISO format
+            time: formattedTime, // Convert the time object to a string in ISO format
+          },
+        ]);
+  
+      if (error) {
+        console.error('Error inserting data:', error);
+      } else {
+        console.log('Data inserted successfully:', data);
+        // Reset or clear form fields if needed
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <>
@@ -46,59 +130,44 @@ const CreateEvent = () => {
             </Pressable>
           </View>
         </View>
+        <View style={styles.section3}>
+        
         <View style={[styles.frame2, styles.frameLayout1]}>
           <View style={styles.frame3}>
             <View style={[styles.descriptionParent, styles.frameLayout1]}>
               <Text style={styles.eventTypo}>Description</Text>
               <View style={styles.yourEmail}>
-                <View
-                  style={[styles.emailBackground, styles.frameChildPosition]}
-                />
-                <Text style={styles.aboutEvent}>About Event.......</Text>
-              </View>
-            </View>
-            <View style={[styles.frame4, styles.frameLayout1]}>
-              <Text style={[styles.passPrice, styles.eventTypo]}>
-                Pass Price
-              </Text>
-              <View style={[styles.frameParent, styles.frameGroupLayout]}>
-                <View style={styles.frame5}>
-                  <Image
-                    style={[styles.frameItem, styles.frameLayout]}
-                    contentFit="cover"
-                    source={require("../assets/vector-9.png")}
+                <View style={[styles.emailBackground, styles.frameChildPosition]} />
+                <TextInput
+                    style={styles.aboutEvent} // Add your custom input styles here
+                    placeholder="Enter Description"
+                    value={eventDescription}
+                    onChangeText={setEventDescription}
                   />
-                  <Text
-                    style={styles.enterPassPrice}
-                  >{`$ Enter Pass Price `}</Text>
-                </View>
-                <View style={styles.frame6}>
-                  <View style={styles.rectangleSpaceBlock}>
-                    <View style={styles.frameInner} />
-                    <View style={styles.mapPin} />
-                  </View>
-                  <Text style={[styles.text, styles.textTypo]}>$</Text>
-                </View>
               </View>
             </View>
             <View style={[styles.frame4, styles.frameLayout1]}>
               <Text style={[styles.passPrice, styles.eventTypo]}>
-                Pass Price
+                Pass Price and Quantity
               </Text>
-              <View style={[styles.frameGroup, styles.frameGroupLayout]}>
-                <View style={styles.frame5}>
-                  <Text
-                    style={styles.enterPassPrice1}
-                  >{`$ Enter Pass Price `}</Text>
+              <View style={[styles.frameGroup, styles.frameGroupLayout1]}>
+                <View style={styles.frame6}>
+                <TextInput
+                    style={styles.enterPassPrice1} // Add your custom input styles here
+                    placeholder="Price"
+                    value={eventPass}
+                    onChangeText={setEventPass}
+                  />
                 </View>
-                <View style={[styles.frame9, styles.frame9Position]}>
-                  <View
-                    style={[styles.rectangleGroup, styles.rectangleSpaceBlock]}
-                  >
-                    <View style={styles.frameInner} />
-                    <View style={styles.mapPin} />
-                  </View>
-                  <Text style={[styles.text1, styles.textTypo]}>$</Text>
+              </View>
+              <View style={[styles.frameGroup, styles.frameGroupLayout2]}>
+                <View style={styles.frame6}>
+                <TextInput
+                    style={styles.enterPassPrice1} // Add your custom input styles here
+                    placeholder="Quantity"
+                    value={eventQuantity}
+                    onChangeText={setEventQuantity}
+                  />
                 </View>
               </View>
             </View>
@@ -110,12 +179,12 @@ const CreateEvent = () => {
                   source={require("../assets/group-182071.png")}
                 />
                 <View style={styles.frame5}>
-                  <Image
-                    style={[styles.frameItem, styles.frameLayout]}
-                    contentFit="cover"
-                    source={require("../assets/vector-9.png")}
+                  <TextInput
+                    style={styles.enterPassPrice1} // Add your custom input styles here
+                    placeholder="Enter location"
+                    value={eventLocation}
+                    onChangeText={setEventLocation}
                   />
-                  <Text style={styles.enterPassPrice1}>New York, USA</Text>
                 </View>
               </View>
               <Text style={[styles.location, styles.eventTypo]}>Location</Text>
@@ -126,60 +195,84 @@ const CreateEvent = () => {
                   style={[styles.location, styles.eventTypo]}
                 >{`Time & Date`}</Text>
                 <View style={[styles.frameView, styles.frameViewPosition]}>
-                  <View style={styles.frameParent1}>
-                    <View style={[styles.todayWrapper, styles.wrapperBorder]}>
-                      <Text style={[styles.today, styles.todayTypo]}>
-                        Today
-                      </Text>
-                    </View>
-                    <View style={styles.tomorrowWrapper}>
-                      <Text style={[styles.tomorrow, styles.todayTypo]}>
-                        Tomorrow
-                      </Text>
-                    </View>
-                    <View
-                      style={[styles.thisWeekWrapper, styles.wrapperBorder]}
-                    >
-                      <Text style={[styles.thisWeek, styles.todayTypo]}>
-                        This week
-                      </Text>
-                    </View>
-                  </View>
-                  <View
-                    style={[
+                    <Pressable onPress={showDatePickerModal} style={[
                       styles.chooseFromCalenderParent,
                       styles.wrapperBorder,
-                    ]}
-                  >
-                    <Text style={[styles.chooseFromCalender, styles.todayTypo]}>
-                      Choose from calender
-                    </Text>
+                    ]}>
                     <Image
                       style={[styles.calendarIcon, styles.iconLayout]}
                       contentFit="cover"
                       source={require("../assets/calendar1.png")}
                     />
+                    <Text style={[styles.chooseFromCalender, styles.todayTypo]}>
+                    {`Selected: ${date.toLocaleDateString()}`}
+                    </Text>
                     <Image
                       style={[styles.frameChild1, styles.frameLayout]}
                       contentFit="cover"
                       source={require("../assets/vector-9.png")}
                     />
-                  </View>
+                    </Pressable>
+                    {showDatePicker && (
+                  <DateTimePicker
+                    testID="datePicker"
+                    value={date}
+                    mode="date"
+                    is24Hour={true}
+                    display="default"
+                    onChange={handleDateChange}
+                  />
+                )}
                 </View>
+                <View style={[styles.frameView1, styles.frameViewPosition]}>
+                    <Pressable onPress={showTimePickerModal} style={[
+                      styles.chooseFromCalenderParent,
+                      styles.wrapperBorder,
+                    ]}>
+                        <Image
+                        style={[styles.calendarIcon, styles.iconLayout]}
+                        contentFit="cover"
+                        source={require("../assets/clock.png")}
+                      />
+                        <Text style={[styles.chooseFromCalender, styles.todayTypo]}>
+                        {`Selected: ${time.toLocaleTimeString()}`}
+                        </Text>
+                      <Image
+                        style={[styles.frameChild1, styles.frameLayout]}
+                        contentFit="cover"
+                        source={require("../assets/vector-9.png")}
+                      />
+                    </Pressable>
+                    {showTimePicker && (
+                  <DateTimePicker
+                    testID="timePicker"
+                    value={time}
+                    mode="time"
+                    is24Hour={true}
+                    display="default"
+                    onChange={handleTimeChange}
+                  />
+                )}
+                </View>
+
+
               </View>
             </View>
             <Text style={[styles.event, styles.eventTypo]}>Event</Text>
             <View style={[styles.frameParent2, styles.frameGroupLayout]}>
               <View style={styles.frame5}>
-                <Text style={styles.enterPassPrice1}>{`Event Name `}</Text>
+                <TextInput
+                    style={styles.enterPassPrice1} // Add your custom input styles here
+                    placeholder="Enter event name"
+                    value={eventName}
+                    onChangeText={setEventName}
+                  />
               </View>
               <View style={[styles.frame9, styles.frame9Position]}>
                 <View style={styles.frameInner1}>
-                  <View style={styles.frameInner} />
                 </View>
                 <Image
                   style={styles.partyIcon}
-                  contentFit="cover"
                   source={require("../assets/party.png")}
                 />
               </View>
@@ -193,9 +286,11 @@ const CreateEvent = () => {
                   contentFit="cover"
                   source={require("../assets/rectangle1.png")}
                 />
+                <Pressable onPress={handleApply}>
                 <Text style={[styles.continue, styles.continueTypo]}>
                   Apply
                 </Text>
+                </Pressable>
               </View>
               <View
                 style={[styles.continueWrapper, styles.rectangleIconLayout]}
@@ -206,6 +301,8 @@ const CreateEvent = () => {
               </View>
             </View>
           </View>
+        </View>
+        
         </View>
       </View>
 
@@ -220,6 +317,10 @@ const CreateEvent = () => {
 };
 
 const styles = StyleSheet.create({
+  section3: {
+    flex: 1,
+  },
+
   frameChildPosition: {
     left: "0%",
     right: "0%",
@@ -230,6 +331,10 @@ const styles = StyleSheet.create({
     width: 22,
   },
   frameLayout1: {
+    width: 335,
+    position: "absolute",
+  },
+  frameLayout2: {
     width: 335,
     position: "absolute",
   },
@@ -245,6 +350,25 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: Border.br_mini,
     width: 334,
+    borderWidth: 1,
+    borderColor: Color.colorGainsboro_200,
+    borderStyle: "solid",
+    position: "absolute",
+  },
+  frameGroupLayout1: {
+    height: 60,
+    borderRadius: Border.br_mini,
+    width: 120,
+    borderWidth: 1,
+    borderColor: Color.colorGainsboro_200,
+    borderStyle: "solid",
+    position: "absolute",
+  },
+  frameGroupLayout2: {
+    height: 60,
+    left : 180,
+    borderRadius: Border.br_mini,
+    width: 120,
     borderWidth: 1,
     borderColor: Color.colorGainsboro_200,
     borderStyle: "solid",
@@ -388,8 +512,8 @@ const styles = StyleSheet.create({
   emailBackground: {
     borderRadius: Border.br_xl,
     backgroundColor: Color.colorWhite,
-    height: 218,
-    left: "0%",
+    height: 120,
+    left: "10%",
     right: "0%",
     top: 0,
     position: "absolute",
@@ -400,6 +524,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.montserratRegular,
     top: 9,
     lineHeight: 34,
+    width: "100%",
     fontSize: FontSize.size_base,
     textAlign: "left",
     position: "absolute",
@@ -410,7 +535,7 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   descriptionParent: {
-    top: 526,
+    top: 475,
     left: 1,
   },
   passPrice: {
@@ -434,7 +559,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   frame5: {
-    top: 18,
+    top: 15,
     left: 71,
     width: 245,
     height: 25,
@@ -457,11 +582,11 @@ const styles = StyleSheet.create({
     marginTop: -39,
   },
   frame6: {
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     height: 45,
-    width: 45,
-    left: 8,
-    top: 8,
+    width: "100%",
+    left: 15,
+    top: 15,
     alignItems: "center",
     overflow: "hidden",
     position: "absolute",
@@ -472,13 +597,14 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorLavender_100,
   },
   frame4: {
-    top: 400,
+    top: 365,
     height: 106,
     left: 1,
     overflow: "hidden",
   },
   enterPassPrice1: {
     lineHeight: 25,
+    width: "100%",
     color: Color.colorGray_300,
     fontFamily: FontFamily.montserratRegular,
     fontSize: FontSize.size_base,
@@ -516,7 +642,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   frameContainer: {
-    top: 280,
+    top: 260,
     height: 106,
   },
   today: {
@@ -583,13 +709,15 @@ const styles = StyleSheet.create({
     left: 216,
   },
   chooseFromCalenderParent: {
-    top: 56,
-    width: 241,
-    left: 0,
+    width: 250,
   },
   frameView: {
     height: 98,
     top: 46,
+  },
+  frameView1: {
+    height: 98,
+    top: 90,
   },
   timeDateParent: {
     height: 144,
@@ -645,7 +773,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   continue: {
-    marginTop: -10,
+    marginTop: 18,
     left: "34.59%",
     color: Color.colorLavender_100,
   },
@@ -659,7 +787,7 @@ const styles = StyleSheet.create({
   continue1: {
     marginTop: -10.5,
     left: "28.24%",
-    color: Color.colorTypographyTitle,
+    color: Color.colorLavender_100,
     textTransform: "uppercase",
     letterSpacing: 1,
     top: "50%",
@@ -671,7 +799,7 @@ const styles = StyleSheet.create({
     borderColor: Color.colorGainsboro_200,
     borderStyle: "solid",
     borderRadius: Border.br_sm,
-    backgroundColor: Color.colorLavender_100,
+    backgroundColor: Color.colorForestgreen_100,
     left: 0,
     top: 0,
   },

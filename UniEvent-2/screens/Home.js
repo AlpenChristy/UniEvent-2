@@ -313,7 +313,7 @@ const Home = () => {
           <View style={styles.searchParent}>
             <Pressable
               style={styles.search}
-              onPress={() => navigation.navigate("Search")}
+              onPress={() => navigation.navigate("SeeAllEvents")}
             >
               <Image
                 style={styles.icon3}
