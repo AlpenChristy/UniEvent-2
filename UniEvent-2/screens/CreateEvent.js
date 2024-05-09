@@ -94,12 +94,24 @@ const CreateEvent = () => {
         console.error('Error inserting data:', error);
       } else {
         console.log('Data inserted successfully:', data);
-        // Reset or clear form fields if needed
+        handleReset();
       }
     } catch (error) {
       console.error('Error:', error);
     }
   };
+
+  const handleReset = () => {
+    setEventName('');
+    setEventLocation('');
+    setEventPass('');
+    setEventQuantity('');
+    setEventDescription('');
+    setDate(new Date());
+    setTime(new Date());
+    // Navigate back to the previous screen
+    navigation.goBack();
+  };  
 
   return (
     <>
@@ -295,9 +307,11 @@ const CreateEvent = () => {
               <View
                 style={[styles.continueWrapper, styles.rectangleIconLayout]}
               >
+                <Pressable onPress={handleReset}>
                 <Text style={[styles.continue1, styles.continueTypo]}>
                   Reset
                 </Text>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -785,7 +799,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   continue1: {
-    marginTop: -10.5,
+    marginTop: 18,
     left: "28.24%",
     color: Color.colorLavender_100,
     textTransform: "uppercase",
