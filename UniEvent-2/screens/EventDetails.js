@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import Invite from "../components/Invite";
 import { Color, FontFamily, FontSize, Border, Padding } from "../GlobalStyles";
+import RazorpayCheckout from "react-native-razorpay";
 
 const EventDetails = () => {
   const [frameContainer12Visible, setFrameContainer12Visible] = useState(false);
@@ -17,6 +18,41 @@ const EventDetails = () => {
   const closeFrameContainer12 = useCallback(() => {
     setFrameContainer12Visible(false);
   }, []);
+
+  const payNow = async () => {
+    // Replace with your payment logic
+    const options = {
+      description: 'Credits towards consultation',
+      // image: require('../../../images/logo.png'),
+      currency: 'INR',
+      key: 'rzp_test_za80t23TBsd5Yw', // Replace with your Razorpay key
+      amount: 12000, // Amount in paisa (e.g., 12000 for 120 INR)
+      name: 'Food App',
+      order_id: '', //Replace this with an order_id created using Orders API.
+      prefill: {
+        email: 'user@example.com',
+        contact: '9876543210',
+        name: 'John Doe',
+      },
+      theme: {color: '#EC9912'},
+    };
+    RazorpayCheckout.open(options)
+      .then(data => {
+        // handle success
+        navigation.navigate('OrderStatus', {
+          status: 'success',
+          paymentId: data.razorpay_payment_id,
+          // Add other necessary data to navigate to the OrderStatus screen
+        });
+      })
+      .catch(error => {
+        // handle failure
+        navigation.navigate('OrderStatus', {
+          status: 'failed',
+        });
+      });
+  };
+
 
   return (
     <>
@@ -117,9 +153,12 @@ const EventDetails = () => {
           ]}
         >
           <View style={[styles.continueParent, styles.parentContainerFlexBox]}>
+            
+            <Pressable onPress={payNow}>
             <Text style={[styles.continue, styles.continueTypo]}>
               Buy Ticket $120
             </Text>
+            </Pressable>
             <Image
               style={styles.frameChild}
               contentFit="cover"

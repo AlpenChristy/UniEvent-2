@@ -36,6 +36,7 @@ import FrameComponent1 from "./components/FrameComponent1";
 import FrameComponent2 from "./components/FrameComponent2";
 import FrameComponent3 from "./components/FrameComponent3";
 import FrameComponent4 from "./components/FrameComponent4";
+import OrderStatus from './screens/OrderStatus';
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
@@ -115,6 +116,11 @@ const App = () => {
             <Stack.Screen
               name="VuesaxlineareyeSlash"
               component={VuesaxlineareyeSlash}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="OrderStatus"
+              component={OrderStatus}
               options={{ headerShown: false }}
             />
             <Stack.Screen

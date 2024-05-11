@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import Menu from "../components/Menu";
 import { FontFamily, FontSize, Color, Padding, Border } from "../GlobalStyles";
 import { supabase } from '../components/supabase';
+import EventDetails from './EventDetails.js';
 
 const SeeAllEvents = () => {
   const navigation = useNavigation();
@@ -38,40 +39,38 @@ const SeeAllEvents = () => {
   );
   
   const renderItem = ({ item }) => (
-    <View style={styles.groupParent}>
-      <Image
-        style={styles.frameChild}
-        contentFit="cover"
-        source={require("../assets/group-33349.png")}
-      />
-      <View style={styles.frameGroup}>
-        <View style={[styles.frame2, styles.frameLayout1]}>
-          <View style={[styles.frame3, styles.frameFlexBox]}>
-            <Text style={[styles.wedApr28, styles.minTypo1]}>
-              {item.date} • {item.time}
+    <Pressable onPress={() => navigation.navigate('EventDetails', { eventId: item.id })}>
+      <View style={styles.groupParent}>
+        <Image
+          style={styles.frameChild}
+          contentFit="cover"
+          source={require("../assets/group-33349.png")}
+        />
+        <View style={styles.frameGroup}>
+          <View style={[styles.frame2, styles.frameLayout1]}>
+            <View style={[styles.frame3, styles.frameFlexBox]}>
+              <Text style={[styles.wedApr28, styles.minTypo1]}>
+                {item.date} • {item.time}
+              </Text>
+              <View style={[styles.iconbookmark, styles.iconbookmarkLayout]} />
+            </View>
+            <Text style={[styles.imGoingTo, styles.goingTypo1]}>
+              {item.title}
             </Text>
-            <View style={[styles.iconbookmark, styles.iconbookmarkLayout]} />
           </View>
-          <Text style={[styles.imGoingTo, styles.goingTypo1]}>
-            {item.title}
-          </Text>
-        </View>
-        <View style={styles.mapPinParent}>
-          <Image
-            style={styles.mapPinIcon}
-            contentFit="cover"
-            source={require("../assets/mappin.png")}
-          />
-          <Text style={[styles.min, styles.minTypo1]}>{item.location}</Text>
+          <View style={styles.mapPinParent}>
+            <Image
+              style={styles.mapPinIcon}
+              contentFit="cover"
+              source={require("../assets/mappin.png")}
+            />
+            <Text style={[styles.min, styles.minTypo1]}>{item.location}</Text>
+          </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 
-
-  const navigateToEvent = (event) => {
-    // Navigate to event details screen
-  };
 
   const openMoreIcon = useCallback(() => {
     setMoreIconVisible(true);
